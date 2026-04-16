@@ -9,7 +9,7 @@ if($_SESSION['type'] != 1){
     die("Access denied. Only teachers can add events.");
 }
  
-$con      = mysqli_connect("127.0.0.1:3307","root","","cabatingan_eventmanagement") or die("Connection Error");
+$con      = mysqli_connect("127.0.0.1","root","","online_marketplace") or die("Connection Error");
 $username = $_SESSION['uname'];
 $msg      = "";
  

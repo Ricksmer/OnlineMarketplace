@@ -1,13 +1,13 @@
 <?php
 	session_start();
-	$con=mysqli_connect("127.0.0.1:3307","root","","cabatingan_eventmanagement") or die ("Error in connection.");
+	$con=mysqli_connect("127.0.0.1","root","","online_marketplace") or die ("Error in connection.");
 	$str="";
 	if(isset($_POST['btnLogin'])){
 		$uname=mysqli_real_escape_string($con,$_POST['txtUsername']);
 		$pwd=mysqli_real_escape_string($con,$_POST['txtPassword']);
  
  
-		$sql="select * from users where username=? and password=?";
+		$sql="select * from user where username=? and password=?";
 		//echo $sql;
 		$stmt=$con->prepare($sql);
 		$stmt->bind_param("ss",$uname,$pwd);
