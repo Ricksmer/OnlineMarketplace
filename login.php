@@ -15,10 +15,21 @@
 		$result=$stmt->get_result();
 		$row=mysqli_num_rows($result);
 		if($row == 1){
-		    $val = mysqli_fetch_array($result);
+			$val = mysqli_fetch_array($result);
+			$userId = $val['UserID'];
+			$sql = "select * from seller where UserID=?";
+			$stmt = $con->prepare($sql);
+			$stmt->bind_param("i", $userId);
+			$stmt->execute();
+			$seller_result = $stmt->get_result();
+			if(mysqli_num_rows($seller_result) == 1){
 		    $_SESSION['uname'] = $val['username'];
 		    $_SESSION['type']  = $val['type'];
-		    header("Location:add-event.php");
+		    header("Location:add-product.php");
+			} else{
+				$str="User is not a seller. Access denied.";
+			}
+
 		}
 		else
 			$str="Invalid credentials";
