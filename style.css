@@ -21,7 +21,7 @@ body {
 .card {
     background: white;
     padding: 40px;
-    width: 320px;
+    width: 720px;
     border-radius: 16px;
     text-align: center;
     box-shadow: 0 20px 40px rgba(0,0,0,0.1);
@@ -236,3 +236,4 @@ body {
 .dropdown:hover .dropdown-menu {
     display: block;
 }
+

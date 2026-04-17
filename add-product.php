@@ -1,59 +1,15 @@
 <?php
-session_start();
-if(!isset($_SESSION['uname'])){
-    header("Location:login.php");
-    exit();
-}
- 
-if($_SESSION['type'] != 1){
-    die("Access denied. Only teachers can add events.");
-}
- 
-$con      = mysqli_connect("127.0.0.1","root","","online_marketplace") or die("Connection Error");
-$username = $_SESSION['uname'];
-$msg      = "";
- 
-if(isset($_POST['btnSave'])){
-    $eventName       = mysqli_real_escape_string($con, $_POST['txtEventName']);
-    $eventDate       = mysqli_real_escape_string($con, $_POST['txtEventDate']);
-    $maxParticipants = (int)$_POST['txtMaxParticipants'];
-    $roomID          = mysqli_real_escape_string($con, $_POST['txtRoomID']);
+  session_start();
 
-    $sql = "select * from event where eventDate=?";
-    $stmt = $con->prepare($sql);
-    $stmt->bind_param("s", $eventDate);
-    $stmt->execute();
-    $result=$stmt->get_result();
-    $row=mysqli_num_rows($result);
-    $msg = "";
-    
-    if($row >= 1){
-        while($events = mysqli_fetch_array($result)){
-            if($events['eventName'] == $eventName){
-                $msg = "<span style='color:red'>Invalid! Event already exists.</span>";
-                break;
-            }
-            if($events['roomID'] == $roomID){
-                $msg = "<span style='color:red'>Invalid! Room unavailable.</span>";
-                break;
-            }
-        }
-    } else {
-        $sql  = "INSERT INTO event (eventName, eventDate, maxParticipants, roomID, username) VALUES (?, ?, ?, ?, ?)";
-        $stmt = $con->prepare($sql);
-        $stmt->bind_param("ssiss", $eventName, $eventDate, $maxParticipants, $roomID, $username);
- 
-        if($stmt->execute()){
-            $msg = "<span style='color:green'>Event saved successfully!</span>";
-        } else {
-            $msg = "<span style='color:red'>Error: " . $con->error . "</span>";
-        }
-    }
-}
+  $con = mysqli_connect("127.0.0.1","root","","online_marketplace") or die("Connection Error");
+  $username = $_SESSION['uname'];
+  $msg = "";
 
- 
-$rooms = mysqli_query($con, "SELECT roomID, roomName FROM room");
+  $categories = mysqli_query($con, "SELECT CategoryName FROM category");
+
+  
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -61,34 +17,93 @@ $rooms = mysqli_query($con, "SELECT roomID, roomName FROM room");
     <title>Add Product</title>
     <link rel="stylesheet" href="style.css">
 </head>
-<body class="center-page">
-    <div class="card">
-        <h2>Add Event</h2>
-        <form method="post">
-        <div class="wrapper">
-            <div class="username">
-                <?php echo htmlspecialchars($username); ?>
-            </div>
-        </div>
-        <input type="text" name="txtEventName" placeholder="Event Name" required><br><br>
-        <input type="date" name="txtEventDate" required><br><br>
-        <input type="number" name="txtMaxParticipants" placeholder="Max Participants" min="1" required><br><br>
-        <select name="txtRoomID" required>
-        <option value="">-- Select Room --</option>
-        <?php while($room = mysqli_fetch_array($rooms)): ?>
-        <option value="<?php echo $room['roomID']; ?>">
-            <?php echo $room['roomID'] . " - " . $room['roomName']; ?>
-        </option>
-        <?php endwhile; ?>
-        </select><br><br>
-            <button type="submit" name="btnSave" class="login-btn">Save Event</button>
-        </form>
-        <div class = "message">
-            <?php echo $msg?>
-        </div>
-    </div>
-</body>
-<style>
 
-</style>
-</html>
+<body class="center-page">
+
+    <div class="card form-card">
+
+        <h2>Add Product</h2>
+
+        <form method="post" class="form">
+
+            <input type="text" name="txtEventName" placeholder="Product Name" required>
+            <input type="number" name="txtMaxParticipants" placeholder="Price" min="1" required>
+            <input type="number" name="txtMaxParticipants" placeholder="Stock / Quantity" min="1" required>
+
+            <select name="txtRoomID" required>
+              <?php while($category = mysqli_fetch_array($categories)): ?>
+                <option value="<?php echo $category['CategoryName']; ?>">
+                    <?php echo $category['CategoryName']; ?>
+                </option>
+              <?php endwhile; ?>
+            </select>
+            <input type="text" name="txtEventName" placeholder="Description" required>
+
+
+            <button type="submit" name="btnSave" class="login-btn">
+                Save Product
+            </button>
+
+        </form>
+
+        <div class="message">
+            <?php echo $msg; ?>
+        </div>
+
+    </div>
+
+</body>
+
+</html> 
+
+<style>
+  .form-card {
+    width:720px;
+    padding: 45px;
+    border-radius: 18px;
+    background: #ffffff;
+    box-shadow: 0 25px 50px rgba(0,0,0,0.12);
+  }
+
+  .form-card h2 {
+      margin-bottom: 25px;
+      font-size: 22px;
+      color: #1e1e1e;
+  }
+
+  .form {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+  }
+
+  /* Inputs */
+  .form input,
+  .form select {
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: 10px;
+      border: 1px solid #ddd;
+      font-size: 14px;
+      outline: none;
+      transition: 0.2s;
+      background: #fafafa;
+  }
+
+  .form input:focus,
+  .form select:focus {
+      border-color: #1e6df6;
+      background: #fff;
+  }
+
+  /* Button spacing fix */
+  .form .login-btn {
+      margin-top: 10px;
+  }
+
+  /* Message styling */
+  .message {
+      margin-top: 12px;
+      font-size: 13px;
+  }
+  </style>

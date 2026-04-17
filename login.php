@@ -23,9 +23,10 @@
 			$stmt->execute();
 			$seller_result = $stmt->get_result();
 			if(mysqli_num_rows($seller_result) == 1){
-		    $_SESSION['uname'] = $val['username'];
-		    $_SESSION['type']  = $val['type'];
-		    header("Location:add-product.php");
+		    $_SESSION['userId'] = $val['UserID'];
+				$_SESSION['uname'] = $val['username'];
+				session_regenerate_id(true);
+		    header("Location:seller-interface.php");
 			} else{
 				$str="User is not a seller. Access denied.";
 			}
