@@ -1,3 +1,11 @@
+<?php
+    session_start();
+    if (!isset($_SESSION['userId'])) {
+        header("Location: /OnlineMarketplace/login.php");
+        exit();
+    }
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -16,7 +24,7 @@
     </a>
     <ul class="nav-links">
         <li><span class="nav-badge seller-badge">Seller</span></li>
-        <li><a href="logout.php">Logout</a></li>
+        <li><a href="/OnlineMarketplace/logout.php">Logout</a></li>
     </ul>
 </nav>
 
@@ -57,7 +65,7 @@
 
     </div>
 
-    <a href="logout.php" class="logout-link">&larr; Logout</a>
+    <a href="/OnlineMarketplace/logout.php" class="logout-link">&larr; Logout</a>
 
 </div>
 
