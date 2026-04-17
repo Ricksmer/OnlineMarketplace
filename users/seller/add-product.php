@@ -43,7 +43,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Add Product</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="../../style.css">
 </head>
 
 <body class="center-page">
