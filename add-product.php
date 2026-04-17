@@ -2,12 +2,40 @@
   session_start();
 
   $con = mysqli_connect("127.0.0.1","root","","online_marketplace") or die("Connection Error");
+  $userId   = $_SESSION['userId'];
   $username = $_SESSION['uname'];
   $msg = "";
 
-  $categories = mysqli_query($con, "SELECT CategoryName FROM category");
+  $categories = mysqli_query($con, "SELECT * FROM category");
+  if(isset($_POST['btnSave'])){
+    $productName = mysqli_real_escape_string($con, $_POST['txtEventName']);
+    $price       = (float)$_POST['txtMaxParticipants'];
+    $stock       = (int)$_POST['txtMaxParticipants'];
+    $category    = mysqli_real_escape_string($con, $_POST['txtRoomID']);
+    $description = mysqli_real_escape_string($con, $_POST['txtEventName']);
 
-  
+    // Check if product already exists
+    $sql = "SELECT * FROM product WHERE productName=?";
+    $stmt = $con->prepare($sql);
+    $stmt->bind_param("s", $productName);
+    $stmt->execute();
+    $result=$stmt->get_result();
+    
+    if($result->num_rows >= 1){
+        $msg = "<span style='color:red'>Invalid! Product already exists.</span>";
+    } else {
+        // Insert new product
+        $sql  = "INSERT INTO product (ProductName, Price, StockQuantity , Description, SellerID, CategoryID) VALUES (?, ?, ?, ?, ?, ?)";
+        $stmt = $con->prepare($sql);
+        $stmt->bind_param("sdisii", $productName, $price, $stock, $description, $userId, $category);
+ 
+        if($stmt->execute()){
+            $msg = "<span style='color:green'>Product saved successfully!</span>";
+        } else {
+            $msg = "<span style='color:red'>Error: " . $con->error . "</span>";
+        }
+    }
+  }
 ?>
 
 <!DOCTYPE html>
@@ -32,7 +60,7 @@
 
             <select name="txtRoomID" required>
               <?php while($category = mysqli_fetch_array($categories)): ?>
-                <option value="<?php echo $category['CategoryName']; ?>">
+                <option value="<?php echo $category['CategoryID']; ?>">
                     <?php echo $category['CategoryName']; ?>
                 </option>
               <?php endwhile; ?>
@@ -54,7 +82,7 @@
 
 </body>
 
-</html> 
+</html>
 
 <style>
   .form-card {
@@ -106,4 +134,4 @@
       margin-top: 12px;
       font-size: 13px;
   }
-  </style>
+</style>
