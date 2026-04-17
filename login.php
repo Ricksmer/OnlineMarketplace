@@ -26,7 +26,7 @@
 		    $_SESSION['userId'] = $val['UserID'];
 				$_SESSION['uname'] = $val['username'];
 				session_regenerate_id(true);
-		    header("Location:seller-interface.php");
+		    header("Location:/users/seller/seller-interface.php");
 			} else{
 				$str="User is not a seller. Access denied.";
 			}
