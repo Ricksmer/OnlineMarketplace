@@ -7,7 +7,9 @@ if (!isset($_SESSION['userId'])) {
 }
 
 include("db_connection.php");
+
 $message = "";
+
 
 // Fetch data for dropdowns
 $orders   = mysqli_query($con, "SELECT OrderID FROM `Order` ORDER BY OrderID DESC");
