@@ -7,8 +7,9 @@ if (!isset($_SESSION['userId'])) {
 }
 
 include("db_connection.php");
-
 $message = "";
+
+
 
 
 // Fetch data for dropdowns
