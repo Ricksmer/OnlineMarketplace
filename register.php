@@ -1,5 +1,48 @@
 <?php
-  $str="";
+    session_start();
+    $con = mysqli_connect("127.0.0.1","root","","online_marketplace") or die("Error in connection.");
+    $str = "";
+
+    if(isset($_POST['btnRegister'])){
+        $uname = mysqli_real_escape_string($con, $_POST['txtUsername']);
+        $pwd   = mysqli_real_escape_string($con, $_POST['txtPassword']);
+        $cpwd  = $_POST['txtConfirmPassword'];
+        $role  = $_POST['txtRole'];
+
+        if($pwd !== $cpwd){
+            $str = "Passwords do not match.";
+        } else {
+            // Check if username already exists
+            $check = $con->prepare("SELECT * FROM user WHERE username=?");
+            $check->bind_param("s", $uname);
+            $check->execute();
+            $check->get_result()->num_rows > 0
+                ? $str = "Username already taken."
+                : null;
+
+            if(empty($str)){
+                // Insert into user table
+                $stmt = $con->prepare("INSERT INTO user (username, password) VALUES (?, ?)");
+                $stmt->bind_param("ss", $uname, $pwd);
+                $stmt->execute();
+                $userId = $con->insert_id;
+
+                // Insert into role table
+                if($role === 'seller'){
+                    $stmt2 = $con->prepare("INSERT INTO seller (UserID) VALUES (?)");
+                    $stmt2->bind_param("i", $userId);
+                    $stmt2->execute();
+                } else {
+                    $stmt2 = $con->prepare("INSERT INTO buyer (UserID) VALUES (?)");
+                    $stmt2->bind_param("i", $userId);
+                    $stmt2->execute();
+                }
+
+                header("Location: login.php?registered=1");
+                exit();
+            }
+        }
+    }
 ?>
 
 <!DOCTYPE html>
@@ -29,12 +72,12 @@
         <input type="password" placeholder="Confirm Password" required name="txtConfirmPassword">
     </div>
 
-    <div class="role-select-wrap">
-        <label class="role-label">ROLE</label>
-        <select class="role-select" name="txtRole" required>
-            <option value="" disabled selected>Select a role</option>
-            <option value="buyer">Buyer</option>
-            <option value="seller">Seller</option>
+    <div class="input-group">
+        <span class="icon"></span>
+        <select name="txtRole" required class="role-select" id="txtRole">
+            <option value="" disabled selected hidden>Purpose of Account</option>
+            <option value="buyer">I want to buy products</option>
+            <option value="seller">I want to sell products</option>
         </select>
     </div>
 
@@ -44,9 +87,36 @@
 
     <button type="submit" class="login-btn" name="btnRegister">Register</button>
 
-    <p class="register-link">Already have an account? <a href="login.php">Log in here</a>.</p>
+    <p style="font-size: 16px; justify-self: center;" class="register-link">Already have an account? <a href="login.php">Log in here</a>.</p>
 </form>
 </div>
 
 </body>
 </html>
+
+<style>
+    .role-select {
+        border: none;
+        outline: none;
+        width: 100%;
+        font-size: 16px;
+        background: transparent;
+        cursor: pointer;
+        color: #727272;
+    }
+
+    .role-select.selected {
+        color: #333;
+    }
+
+    .role-select option {
+        color: #333;
+    }
+</style>
+
+<script>
+    const select = document.getElementById('txtRole');
+    select.addEventListener('change', function () {
+        this.classList.add('selected');
+    });
+</script>
