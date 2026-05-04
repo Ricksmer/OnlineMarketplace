@@ -1,3 +1,12 @@
+<?php
+    session_start();
+    if (!isset($_SESSION['userId'])) {
+        header("Location: /OnlineMarketplace/login.php");
+        exit();
+    }
+?>
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -17,7 +26,7 @@
     </a>
     <ul class="nav-links">
         <li><span class="nav-badge buyer-badge">Buyer</span></li>
-        <li><a href="logout.php">Logout</a></li>
+        <li><a href="../logout.php">Logout</a></li>
     </ul>
 </nav>
 
@@ -38,20 +47,21 @@
 
     <div class="action-grid">
 
-        <!-- Add Address -->
+        <!-- Edit Profile -->
         <div class="action-card">
             <div class="card-icon icon-teal">&#127968;</div>
-            <h3>Add Address</h3>
-            <p>Save a preferred shipping address.</p>
-            <button class="card-btn" onclick="location.href='add-address.php'">Go to Add Address</button>
+            <h3>Edit Profile</h3>
+            <p>Customize your user profile. <br><br></p>
+            <button class="card-btn" onclick="location.href='../edit-profile.php'">Go to Edit Profile</button>
         </div>
+
 
         <!-- Add to Cart / Order Item -->
         <div class="action-card">
             <div class="card-icon icon-blue">&#128722;</div>
-            <h3>Add to Cart</h3>
+            <h3>View Marketplace</h3>
             <p>Browse products and add items to your cart.</p>
-            <button class="card-btn" onclick="location.href='add-order-item.php'">Go to Cart</button>
+            <button class="card-btn" onclick="location.href='market.php'">Go to Marketplace</button>
         </div>
 
         <!-- Add Order / Checkout -->
@@ -59,7 +69,7 @@
             <div class="card-icon icon-green">&#9989;</div>
             <h3>Checkout</h3>
             <p>Review your cart and place your order.</p>
-            <button class="card-btn" onclick="location.href='add-order.php'">Go to Checkout</button>
+            <button class="card-btn" onclick="location.href='checkout.php'">Go to Checkout</button>
         </div>
 
         <!-- Add Payment -->
@@ -72,7 +82,7 @@
 
     </div>
 
-    <a href="logout.php" class="logout-link">&larr; Logout</a>
+    <a href="../logout.php" class="logout-link">&larr; Logout</a>
 
 </div>
 

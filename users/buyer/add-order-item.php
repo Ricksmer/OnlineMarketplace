@@ -1,56 +1,98 @@
 <?php
-session_start();
+    session_start();
+    $con = mysqli_connect("127.0.0.1", "root", "", "online_marketplace") or die("Error in connection.");
 
-if (!isset($_SESSION['userId'])) {
-    header("Location: login.php");
-    exit();
-}
-
-include("db_connection.php");
-
-$message = "";
-
-
-
-
-// Fetch data for dropdowns
-$orders   = mysqli_query($con, "SELECT OrderID FROM `Order` ORDER BY OrderID DESC");
-$products = mysqli_query($con, "SELECT ProductName, Price FROM Product");
-
-// Add New Record Logic
-if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['btnSave'])) {
-    $orderID = (int)$_POST['ddlOrderID'];
-    $pName   = mysqli_real_escape_string($con, $_POST['ddlProductName']);
-    $qty     = (int)$_POST['txtQuantity'];
-
-    // Fetch unit price
-    $priceLookup = mysqli_query($con, "SELECT Price FROM Product WHERE ProductName = '$pName'");
-    $productData = mysqli_fetch_assoc($priceLookup);
-
-    if ($productData) {
-        $totalPrice = $productData['Price'] * $qty;
-
-        $sql  = "INSERT INTO OrderItem (OrderID, ProductName, Quantity, PriceAtPurchase) VALUES (?, ?, ?, ?)";
-        $stmt = $con->prepare($sql);
-        $stmt->bind_param("isid", $orderID, $pName, $qty, $totalPrice);
-
-        if ($stmt->execute()) {
-            $message = "<div class='alert success'>✅ Item added successfully! Total: $" . number_format($totalPrice, 2) . "</div>";
-        } else {
-            $message = "<div class='alert error'>❌ Error: " . $con->error . "</div>";
-        }
-        $stmt->close();
-    } else {
-        $message = "<div class='alert error'>❌ Product not found.</div>";
+    if(!isset($_SESSION['userId'])){
+        header("Location: /OnlineMarketplace/login.php");
+        exit();
     }
-}
+
+    $userId = $_SESSION['userId'];
+    $uname  = $_SESSION['uname'];
+    $str     = "";
+    $success = "";
+
+    // Get product from URL
+    $productName = isset($_GET['product']) ? trim($_GET['product']) : '';
+
+    if(empty($productName)){
+        header("Location: /OnlineMarketplace/users/buyer/market.php");
+        exit();
+    }
+
+    // Fetch product details
+    $stmtProd = $con->prepare("SELECT * FROM Product WHERE ProductName=?");
+    $stmtProd->bind_param("s", $productName);
+    $stmtProd->execute();
+    $product = $stmtProd->get_result()->fetch_assoc();
+
+    if(!$product){
+        header("Location: /OnlineMarketplace/users/buyer/market.php");
+        exit();
+    }
+
+    // Handle Add to Cart
+    if(isset($_POST['btnAddToCart'])){
+        $qty = intval($_POST['txtQuantity']);
+
+        if($qty < 1){
+            $str = "Quantity must be at least 1.";
+        } elseif($qty > $product['StockQuantity']){
+            $str = "Not enough stock. Only " . $product['StockQuantity'] . " available.";
+        } else {
+            $priceAtPurchase = $product['Price'];
+
+            // Check for existing pending order for this buyer
+            $stmtCheck = $con->prepare("SELECT OrderID FROM `Order` WHERE BuyerID=? AND Status='pending' LIMIT 1");
+            $stmtCheck->bind_param("i", $userId);
+            $stmtCheck->execute();
+            $existingOrder = $stmtCheck->get_result()->fetch_assoc();
+
+            if($existingOrder){
+                // Use existing pending order
+                $orderId = $existingOrder['OrderID'];
+            } else {
+                // Grab a random shipping record with status Processing
+                $stmtShip = $con->prepare("SELECT ShippingID FROM Shipping WHERE ShippingStatus='Processing' ORDER BY RAND() LIMIT 1");
+                $stmtShip->execute();
+                $shipRow = $stmtShip->get_result()->fetch_assoc();
+
+                if(!$shipRow){
+                    $str = "No shipping option available. Please contact support.";
+                    goto end;
+                }
+
+                $shippingId = $shipRow['ShippingID'];
+                $today      = date('Y-m-d');
+
+                // Create new order
+                $stmtOrder = $con->prepare("INSERT INTO `Order` (OrderDate, Status, ShippingID, BuyerID) VALUES (?, 'pending', ?, ?)");
+                $stmtOrder->bind_param("sii", $today, $shippingId, $userId);
+                if(!$stmtOrder->execute()){
+                    $str = "Failed to create order. Please try again.";
+                    goto end;
+                }
+                $orderId = $con->insert_id;
+            }
+
+            // Insert order item
+            $stmtItem = $con->prepare("INSERT INTO OrderItem (OrderID, ProductName, Quantity, PriceAtPurchase) VALUES (?, ?, ?, ?)");
+            $stmtItem->bind_param("isid", $orderId, $productName, $qty, $priceAtPurchase);
+            if($stmtItem->execute()){
+                $success = "Added to cart! (" . $qty . "x " . htmlspecialchars($productName) . " @ $" . number_format($priceAtPurchase, 2) . " each)";
+            } else {
+                $str = "Failed to add item. Please try again.";
+            }
+        }
+        end:
+    }
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Add Order Item | Online Marketplace</title>
+    <title>Add to Cart | Online Marketplace</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
@@ -70,7 +112,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['btnSave'])) {
 
         body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
 
-        /* ── Navbar ── */
+        /* Navbar */
         .navbar {
             background: var(--blue); padding: 0 32px; height: 60px;
             display: flex; align-items: center; justify-content: space-between;
@@ -84,98 +126,136 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['btnSave'])) {
         .nav-btn { background: #fff; color: var(--blue); padding: 6px 14px; border-radius: 8px; font-weight: 700; font-size: 13px; text-decoration: none; transition: .2s; }
         .nav-btn:hover { background: #ff4d4d; color: #fff; }
 
-        /* ── Page ── */
-        .page { max-width: 560px; margin: 48px auto; padding: 0 20px; }
+        /* Page */
+        .page { max-width: 520px; margin: 48px auto; padding: 0 20px; }
 
         .card { background: var(--surface); border-radius: 18px; padding: 36px; box-shadow: var(--shadow); }
 
-        .card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 28px; }
+        .card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
         .card-header h1 { font-size: 22px; font-weight: 800; }
         .badge { background: #e0e7ff; color: var(--blue); font-size: 11px; font-weight: 700; padding: 5px 12px; border-radius: 20px; letter-spacing: .05em; text-transform: uppercase; }
 
+        /* Product info box */
+        .product-info {
+            background: #f0f4ff;
+            border: 1.5px solid #c7d2fe;
+            border-radius: 12px;
+            padding: 16px 18px;
+            margin-bottom: 24px;
+        }
+        .product-info-name {
+            font-size: 17px; font-weight: 800; color: var(--text); margin-bottom: 6px;
+        }
+        .product-info-row {
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .product-info-price {
+            font-size: 22px; font-weight: 800; color: var(--blue);
+        }
+        .product-info-stock {
+            font-size: 12px; color: var(--muted); font-weight: 500;
+        }
+        .product-info-stock.low { color: #ef4444; }
+        .product-info-desc {
+            font-size: 13px; color: var(--muted); margin-top: 8px; line-height: 1.5;
+        }
+
         /* Alerts */
         .alert { padding: 12px 16px; border-radius: 10px; margin-bottom: 20px; font-size: 14px; font-weight: 500; }
-        .success { background: #ecfdf5; color: #065f46; border: 1.5px solid #a7f3d0; }
-        .error   { background: #fef2f2; color: #991b1b; border: 1.5px solid #fecaca; }
+        .alert-success { background: #ecfdf5; color: #065f46; border: 1.5px solid #a7f3d0; }
+        .alert-error   { background: #fef2f2; color: #991b1b; border: 1.5px solid #fecaca; }
 
         /* Form */
         .form-group { margin-bottom: 18px; }
         .form-label { display: block; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); margin-bottom: 8px; }
-        .form-input, select.form-input {
+        .form-input {
             width: 100%; padding: 12px 14px; border: 1.5px solid var(--border);
             border-radius: 10px; font-size: 14px; font-family: inherit;
             outline: none; transition: border-color .2s; background: #fafafa;
         }
-        .form-input:focus, select.form-input:focus { border-color: var(--blue); background: #fff; }
+        .form-input:focus { border-color: var(--blue); background: #fff; }
+
+        .price-note {
+            font-size: 12px; color: var(--muted); margin-top: 6px;
+        }
 
         /* Buttons */
-        .btn-save { margin-top: 8px; width: 100%; background: linear-gradient(135deg, var(--blue-light), var(--blue)); color: #fff; border: none; padding: 14px; border-radius: 10px; font-size: 15px; font-weight: 700; cursor: pointer; font-family: inherit; transition: .2s; }
+        .btn-save {
+            margin-top: 8px; width: 100%;
+            background: linear-gradient(135deg, var(--blue-light), var(--blue));
+            color: #fff; border: none; padding: 14px; border-radius: 10px;
+            font-size: 15px; font-weight: 700; cursor: pointer; font-family: inherit; transition: .2s;
+        }
         .btn-save:hover { opacity: .9; }
 
-        .view-link { display: block; text-align: center; margin-top: 14px; color: var(--muted); font-size: 13px; text-decoration: none; }
-        .view-link:hover { color: var(--blue); }
+        .back-link {
+            display: block; text-align: center; margin-top: 14px;
+            color: var(--muted); font-size: 13px; text-decoration: none;
+        }
+        .back-link:hover { color: var(--blue); }
 
-        footer { text-align: center; color: var(--muted); font-size: 12px; padding: 24px 0 12px; }
+        .divider { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
     </style>
 </head>
 <body>
 
 <nav class="navbar">
-    <a href="dashboard.php" class="nav-logo">
+    <a href="/OnlineMarketplace/users/buyer/market.php" class="nav-logo">
         <span class="icon">OM</span>
         Online Marketplace
     </a>
     <div class="nav-right">
-        <a href="index.php" class="nav-back">← Dashboard</a>
-        <a href="logout.php" class="nav-btn">Logout</a>
+        <a href="/OnlineMarketplace/users/buyer/market.php" class="nav-back">← Back to Market</a>
+        <a href="/OnlineMarketplace/logout.php" class="nav-btn">Logout</a>
     </div>
 </nav>
 
 <div class="page">
     <div class="card">
         <div class="card-header">
-            <h1>Add Order Item</h1>
-            <span class="badge">Management</span>
+            <h1>Add to Cart</h1>
+            <span class="badge">🛒 Cart</span>
         </div>
 
-        <?php echo $message; ?>
+        <!-- Product Info Display -->
+        <div class="product-info">
+            <div class="product-info-name">🛍️ <?php echo htmlspecialchars($product['ProductName']); ?></div>
+            <?php if(!empty($product['Description'])): ?>
+                <div class="product-info-desc"><?php echo htmlspecialchars($product['Description']); ?></div>
+            <?php endif; ?>
+            <hr style="border:none;border-top:1px solid #c7d2fe;margin:10px 0;">
+            <div class="product-info-row">
+                <span class="product-info-price">$<?php echo number_format($product['Price'], 2); ?> <span style="font-size:13px;font-weight:500;color:var(--muted);">/ item</span></span>
+                <span class="product-info-stock <?php echo $product['StockQuantity'] <= 5 ? 'low' : ''; ?>">
+                    <?php echo $product['StockQuantity']; ?> in stock
+                </span>
+            </div>
+        </div>
 
+        <!-- Alerts -->
+        <?php if(!empty($success)): ?>
+            <div class="alert alert-success">✅ <?php echo $success; ?></div>
+        <?php endif; ?>
+        <?php if(!empty($str)): ?>
+            <div class="alert alert-error">❌ <?php echo htmlspecialchars($str); ?></div>
+        <?php endif; ?>
+
+        <!-- Form -->
         <form method="POST">
             <div class="form-group">
-                <label class="form-label">Order Reference</label>
-                <select name="ddlOrderID" class="form-input" required>
-                    <option value="" disabled selected>-- Select Order ID --</option>
-                    <?php while($o = mysqli_fetch_assoc($orders)): ?>
-                        <option value="<?php echo $o['OrderID']; ?>">Order #<?php echo $o['OrderID']; ?></option>
-                    <?php endwhile; ?>
-                </select>
-            </div>
-
-            <div class="form-group">
-                <label class="form-label">Select Product</label>
-                <select name="ddlProductName" class="form-input" required>
-                    <option value="" disabled selected>-- Choose Product --</option>
-                    <?php while($p = mysqli_fetch_assoc($products)): ?>
-                        <option value="<?php echo $p['ProductName']; ?>">
-                            <?php echo $p['ProductName']; ?> ($<?php echo number_format($p['Price'], 2); ?>)
-                        </option>
-                    <?php endwhile; ?>
-                </select>
-            </div>
-
-            <div class="form-group">
                 <label class="form-label">Quantity</label>
-                <input class="form-input" type="number" name="txtQuantity" min="1" value="1" required>
+                <input class="form-input" type="number" name="txtQuantity" 
+                       min="1" max="<?php echo $product['StockQuantity']; ?>" 
+                       value="1" required>
+                <p class="price-note">Price per item: $<?php echo number_format($product['Price'], 2); ?></p>
             </div>
 
-            <button type="submit" name="btnSave" class="btn-save">Save New Record</button>
+            <button type="submit" name="btnAddToCart" class="btn-save">🛒 Add to Cart</button>
         </form>
 
-        <a href="view-order-items.php" class="view-link">📋 View all order items →</a>
+        <a href="/OnlineMarketplace/users/buyer/market.php" class="back-link">← Back to Market</a>
     </div>
 </div>
-
-
 
 </body>
 </html>
