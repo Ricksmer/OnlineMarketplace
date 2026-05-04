@@ -57,7 +57,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
             <?php echo $message; ?>
 
-            <form action="add_voucher.php" method="POST">
+            <form action="add-voucher.php" method="POST">
                 <div class="form-group">
                     <label class="form-label">Voucher ID</label>
                     <input type="number" name="voucherID" placeholder="e.g. 501" required>
@@ -89,7 +89,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
                 <button type="submit" class="card-btn">Register Voucher</button>
             </form>
+            <a href="seller-interface.php" class="back-link">← Go Back</a>
         </div>
+
 
         <footer class="page-footer">
             &copy; 2026 OnlineMarketplace Systems. All rights reserved.
@@ -265,4 +267,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             color: #aaa;
             font-size: 12px;
         }
+
+        .back-link {
+            display: block;
+            text-align: center;
+            margin-top: 16px;
+            font-size: 13px;
+            color: #1e6df6;
+            text-decoration: none;
+        }
+        .back-link:hover { text-decoration: underline; }
     </style>
