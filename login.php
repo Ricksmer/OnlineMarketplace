@@ -29,6 +29,7 @@
 		    header("Location: /OnlineMarketplace/users/seller/seller-interface.php");
 			} else{
 				$str="User is not a seller. Access denied.";
+				// header("Location: /OnlineMarketplace/users/buyer/buyer-interface.php");
 			}
 
 		}
@@ -60,11 +61,12 @@
 		<span class="icon"></span>
 		<input type="password" placeholder="Password" required name="txtPassword">
 	</div>
-	    <button type="submit" class="login-btn" name="btnLogin">Log in</button>
-
-	<div class = "error-output">
-		<?php echo $str; ?>
-	</div>
+	
+		<div class = "error-output">
+			<?php echo $str; ?>
+		</div>
+	  
+		<button type="submit" class="login-btn" name="btnLogin">Log in</button>
 </form>
 </div>
  
