@@ -26,7 +26,7 @@
     $result=$stmt->get_result();
     
     if($result->num_rows >= 1){
-        $msg = "<span style='color:red'>Invalid! Product already exists.</span>";
+        $msg = "Invalid! Product already exists.";
     } else {
         // Insert new product
         $sql  = "INSERT INTO product (ProductName, Price, StockQuantity , Description, SellerID, CategoryID) VALUES (?, ?, ?, ?, ?, ?)";
@@ -34,9 +34,9 @@
         $stmt->bind_param("sdisii", $productName, $price, $stock, $description, $userId, $category);
  
         if($stmt->execute()){
-            $msg = "<span style='color:green'>Product saved successfully!</span>";
+            $msg = "Product saved successfully!";
         } else {
-            $msg = "<span style='color:red'>Error: " . $con->error . "</span>";
+            $msg = $con->error;
         }
     }
   }
