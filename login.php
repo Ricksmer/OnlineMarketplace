@@ -36,7 +36,7 @@
                 $_SESSION['userId'] = $val['UserID'];
 								$_SESSION['uname']  = $val['username'];
 								session_regenerate_id(true);
-								header("Location: /OnlineMarketplace/users/buyer/buyer-interface.html");
+								header("Location: /OnlineMarketplace/users/buyer/buyer-interface.php");
             }
         } else {
             $str = "Invalid credentials";
