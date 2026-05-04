@@ -13,10 +13,10 @@
   $categories = mysqli_query($con, "SELECT * FROM category");
   if(isset($_POST['btnSave'])){
     $productName = mysqli_real_escape_string($con, $_POST['txtEventName']);
-    $price       = (float)$_POST['txtMaxParticipants'];
-    $stock       = (int)$_POST['txtMaxParticipants'];
+    $price       = (float)$_POST['txtPrice'];
+    $stock       = (int)$_POST['txtStock'];
     $category    = mysqli_real_escape_string($con, $_POST['txtRoomID']);
-    $description = mysqli_real_escape_string($con, $_POST['txtEventName']);
+    $description = mysqli_real_escape_string($con, $_POST['txtDescription']);
 
     // Check if product already exists
     $sql = "SELECT * FROM product WHERE productName=?";
@@ -88,7 +88,7 @@
             <input class="ap-input" type="number" name="txtPrice" placeholder="0.00" min="0" step="0.01" required>
  
             <label class="ap-label">STOCK / QUANTITY</label>
-            <input class="ap-input" type="number" name="txtMaxParticipants" placeholder="e.g. 100" min="1" required>
+            <input class="ap-input" type="number" name="txtStock" placeholder="e.g. 100" min="1" required>
  
             <label class="ap-label">CATEGORY</label>
             <select class="ap-input" name="txtRoomID" required>
