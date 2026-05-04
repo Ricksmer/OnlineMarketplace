@@ -44,9 +44,9 @@
 
         <div class="action-card seller-card">
             <div class="card-icon icon-teal">&#127968;</div>
-            <h3>Add Address</h3>
-            <p>Register your store or shipping address.</p>
-            <button class="card-btn" onclick="location.href='add-address.php'">Go to Add Address</button>
+            <h3>Edit Profile</h3>
+            <p>Customize your user profile.</p>
+            <button class="card-btn" onclick="location.href='../edit-profile.php'">Go to Edit Profile</button>
         </div>
 
         <div class="action-card seller-card">
