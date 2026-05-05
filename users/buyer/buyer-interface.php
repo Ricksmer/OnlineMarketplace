@@ -145,7 +145,7 @@ $payments = mysqli_query($con, "
 </div>
 
 <!-- BUYER ORDER RECORDS -->
-<p class="section-title table-title">Your Orders</p>
+<p class="section-title table-title" style="width:50vw; justify-self: center;">Your Orders</p>
 
 <table class="records-table">
     <thead>
@@ -184,7 +184,7 @@ $payments = mysqli_query($con, "
 </table>
 
 <!-- BUYER ORDER ITEMS -->
-<p class="section-title table-title">Your Order Items</p>
+<p class="section-title table-title"  style="width:50vw; justify-self: center;">Your Order Items</p>
 
 <table class="records-table">
     <thead>
@@ -223,7 +223,7 @@ $payments = mysqli_query($con, "
 </table>
 
 <!-- BUYER PAYMENT RECORDS -->
-<p class="section-title table-title">Your Payments</p>
+<p class="section-title table-title"  style="width:50vw; justify-self: center;">Your Payments</p>
 
 <table class="records-table">
     <thead>
@@ -276,7 +276,7 @@ $payments = mysqli_query($con, "
 
     .records-table {
         justify-self: center;
-        width: 65vw;
+        width: 50vw;
         border-collapse: collapse;
         margin-top: 15px;
         margin-bottom: 30px;

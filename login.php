@@ -34,9 +34,9 @@
                 header("Location: /OnlineMarketplace/users/seller/seller-interface.php");
             } else {
                 $_SESSION['userId'] = $val['UserID'];
-								$_SESSION['uname']  = $val['username'];
-								session_regenerate_id(true);
-								header("Location: /OnlineMarketplace/users/buyer/buyer-interface.php");
+                $_SESSION['uname']  = $val['username'];
+                session_regenerate_id(true);
+                header("Location: /OnlineMarketplace/users/buyer/buyer-interface.php");
             }
         } else {
             $str = "Invalid credentials";
