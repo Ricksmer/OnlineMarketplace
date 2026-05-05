@@ -4,42 +4,51 @@
     $str = "";
 
     if(isset($_POST['btnRegister'])){
-        $uname = mysqli_real_escape_string($con, $_POST['txtUsername']);
-        $pwd   = mysqli_real_escape_string($con, $_POST['txtPassword']);
-        $cpwd  = $_POST['txtConfirmPassword'];
-        $role  = $_POST['txtRole'];
+        $uname = trim($_POST['txtUsername']);
+        $pwd   = trim($_POST['txtPassword']);
+        $cpwd  = trim($_POST['txtConfirmPassword']);
+        $role  = trim($_POST['txtRole']);
 
         if($pwd !== $cpwd){
             $str = "Passwords do not match.";
+        } elseif(empty($uname) || empty($pwd) || empty($role)){
+            $str = "All fields are required.";
         } else {
             // Check if username already exists
-            $check = $con->prepare("SELECT * FROM user WHERE username=?");
+            $check = $con->prepare("SELECT * FROM `user` WHERE username=?");
             $check->bind_param("s", $uname);
             $check->execute();
-            $check->get_result()->num_rows > 0
-                ? $str = "Username already taken."
-                : null;
+            
+            if($check->get_result()->num_rows > 0){
+                $str = "Username already taken.";
+            } else {
+                // Get the next UserID manually
+                $maxId = $con->prepare("SELECT MAX(UserID) as maxId FROM `user`");
+                $maxId->execute();
+                $maxRow = $maxId->get_result()->fetch_assoc();
+                $userId = ($maxRow['maxId'] ?? 0) + 1;
 
-            if(empty($str)){
-                // Insert into user table
-                $stmt = $con->prepare("INSERT INTO user (username, password) VALUES (?, ?)");
-                $stmt->bind_param("ss", $uname, $pwd);
-                $stmt->execute();
-                $userId = $con->insert_id;
-
-                // Insert into role table
-                if($role === 'seller'){
-                    $stmt2 = $con->prepare("INSERT INTO seller (UserID) VALUES (?)");
-                    $stmt2->bind_param("i", $userId);
-                    $stmt2->execute();
+                // Insert into user table with explicit UserID
+                $stmt = $con->prepare("INSERT INTO `user` (UserID, username, password) VALUES (?, ?, ?)");
+                $stmt->bind_param("iss", $userId, $uname, $pwd);
+                
+                if(!$stmt->execute()){
+                    $str = "Registration failed: " . $stmt->error;
                 } else {
-                    $stmt2 = $con->prepare("INSERT INTO buyer (UserID) VALUES (?)");
-                    $stmt2->bind_param("i", $userId);
-                    $stmt2->execute();
-                }
+                    // Insert into role table
+                    if($role === 'seller'){
+                        $stmt2 = $con->prepare("INSERT INTO seller (UserID) VALUES (?)");
+                        $stmt2->bind_param("i", $userId);
+                        $stmt2->execute();
+                    } else {
+                        $stmt2 = $con->prepare("INSERT INTO buyer (UserID) VALUES (?)");
+                        $stmt2->bind_param("i", $userId);
+                        $stmt2->execute();
+                    }
 
-                header("Location: login.php?registered=1");
-                exit();
+                    header("Location: login.php?registered=1");
+                    exit();
+                }
             }
         }
     }
@@ -51,6 +60,25 @@
     <meta charset="UTF-8">
     <title>Register</title>
     <link rel="stylesheet" href="style.css">
+    <style>
+        .role-select {
+            border: none;
+            outline: none;
+            width: 100%;
+            font-size: 16px;
+            background: transparent;
+            cursor: pointer;
+            color: #727272;
+        }
+
+        .role-select.selected {
+            color: #333;
+        }
+
+        .role-select option {
+            color: #333;
+        }
+    </style>
 </head>
 <body class="center-page">
 <div class="login-card">
@@ -91,32 +119,12 @@
 </form>
 </div>
 
-</body>
-</html>
-
-<style>
-    .role-select {
-        border: none;
-        outline: none;
-        width: 100%;
-        font-size: 16px;
-        background: transparent;
-        cursor: pointer;
-        color: #727272;
-    }
-
-    .role-select.selected {
-        color: #333;
-    }
-
-    .role-select option {
-        color: #333;
-    }
-</style>
-
 <script>
     const select = document.getElementById('txtRole');
     select.addEventListener('change', function () {
         this.classList.add('selected');
     });
 </script>
+
+</body>
+</html>
