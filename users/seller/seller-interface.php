@@ -111,15 +111,6 @@
                 </button>
             </div>
 
-            <div class="action-card seller-card">
-                <div class="card-icon icon-blue">&#128179;</div>
-                <h3>Add Payment</h3>
-                <p>Record a new payment for a customer order.</p>
-                <button class="card-btn" onclick="location.href='add-payment.php'">
-                    Go to Add Payment
-                </button>
-            </div>
-
         </div>
 
         <a href="../logout.php" class="logout-link">&larr; Logout</a>
