@@ -26,7 +26,18 @@
     $result=$stmt->get_result();
     
     if($result->num_rows >= 1){
-        $msg = "Invalid! Product already exists.";
+        $row = $result->fetch_assoc();
+        $newStock = $row['StockQuantity'] + $stock; 
+
+        $sql  = "UPDATE product SET Price=?, StockQuantity=?, Description=?, CategoryID=? WHERE productName=?";
+        $stmt = $con->prepare($sql);
+        $stmt->bind_param("disss", $price, $newStock, $description, $category, $productName);
+
+        if($stmt->execute()){
+            $msg = "Product updated! Added " . $stock . " units to stock.";
+        } else {
+            $msg = $con->error;
+        }
     } else {
         // Insert new product
         $sql  = "INSERT INTO product (ProductName, Price, StockQuantity , Description, SellerID, CategoryID) VALUES (?, ?, ?, ?, ?, ?)";
