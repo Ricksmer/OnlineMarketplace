@@ -288,7 +288,7 @@
         </div>
         <button type="submit" class="login-btn" name="btnSaveAddress">Save Address</button>
     </form>
-    <a href="/OnlineMarketplace/users/edit-profile.php" class="back-link">← Go Back</a>
+    <a href="/OnlineMarketplace/users/<?php echo ($isBuyer) ? 'edit-profile.php' : 'seller/seller-interface.php'; ?>" class="back-link">← Go Back</a>
 </div>
 </body>
 </html>

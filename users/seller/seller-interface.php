@@ -111,6 +111,16 @@
                 </button>
             </div>
 
+            
+            <div class="action-card seller-card">
+                <div class="card-icon icon-amber">&#127987;</div>
+                <h3>Add Address</h3>
+                <p>Manage your addresses</p>
+                <button class="card-btn" onclick="location.href='../manage-addresses.php'">
+                    Go to Addresses
+                </button>
+            </div>
+
         </div>
 
         <a href="../logout.php" class="logout-link">&larr; Logout</a>
