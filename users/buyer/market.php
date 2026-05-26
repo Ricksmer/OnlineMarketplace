@@ -227,9 +227,7 @@
                  data-category="<?php echo htmlspecialchars($p['CategoryName'] ?? ''); ?>">
                 <div class="product-img">🛍️</div>
                 <div class="product-body">
-                    <?php if(!empty($p['CategoryName'])): ?>
-                        <span class="product-category"><?php echo htmlspecialchars($p['CategoryName']); ?></span>
-                    <?php endif; ?>
+                    <span class="product-category"><?php echo htmlspecialchars($p['CategoryName']); ?></span>
                     <div class="product-name"><?php echo htmlspecialchars($p['ProductName']); ?></div>
                     <div class="product-desc"><?php echo htmlspecialchars($p['Description'] ?? 'No description available.'); ?></div>
                     <div class="product-footer">
