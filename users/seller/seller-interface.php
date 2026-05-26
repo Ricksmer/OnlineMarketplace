@@ -129,43 +129,10 @@
 
     <p class="section-title table-title">Your Products</p>
 
-    <table class="records-table">
-        <thead>
-            <tr>
-                <th>Product Name</th>
-                <th>Price</th>
-                <th>Stock</th>
-                <th>Category</th>
-            </tr>
-        </thead>
+    <button class="nav-button" onclick="location.href='seller-products.php'">
+        View Products
+    </button>
 
-        <tbody>
-            <?php if(mysqli_num_rows($products) > 0): ?>
-                <?php while($row = mysqli_fetch_assoc($products)): ?>
-                    <tr>
-                        <td>
-                            <strong><?php echo htmlspecialchars($row['ProductName']); ?></strong>
-                        </td>
-                        <td>
-                            $<?php echo number_format($row['Price'], 2); ?>
-                        </td>
-                        <td>
-                            <?php echo $row['StockQuantity']; ?>
-                        </td>
-                        <td>
-                            <?php echo htmlspecialchars($row['CategoryName'] ?? 'Uncategorized'); ?>
-                        </td>
-                    </tr>
-                <?php endwhile; ?>
-            <?php else: ?>
-                <tr>
-                    <td colspan="4" style="text-align:center; color:#888;">
-                        No products listed yet.
-                    </td>
-                </tr>
-            <?php endif; ?>
-        </tbody>
-    </table>
 
     <p class="section-title table-title">Vouchers</p>
 
@@ -269,12 +236,29 @@
 <style>
     .table-title {
         justify-self: center;
-        width: 50vw;
+        width: 45vw;
+    }
+
+    .nav-button{
+        display: flex;
+        justify-self: left;
+        justify-content:center;
+        align-self: center;
+        margin-left: 27vw;
+        margin-bottom: 2vh;
+        padding: 0.8vh;
+        padding-top: 1.2vh;
+        padding-bottom: 1.2vh;
+        width: 12vw;
+        color: white;
+        background-color: #0a4cd3;
+        border: none;
+        border-radius: 0.8vh;
     }
 
     .records-table { 
         justify-self: center;
-        width: 50vw; 
+        width: 45vw; 
         border-collapse: collapse; 
         margin-top: 15px; 
         margin-bottom: 30px; 

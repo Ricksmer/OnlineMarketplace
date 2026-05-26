@@ -65,14 +65,18 @@
                 $shippingId = $shipRow['ShippingID'];
                 $today      = date('Y-m-d');
 
+                $stmtNextOrder = $con->prepare("SELECT MAX(OrderID) AS MaxOrderID FROM `Order`");
+                $stmtNextOrder->execute();
+                $nextOrderRow = $stmtNextOrder->get_result()->fetch_assoc();
+                $orderId = $nextOrderRow['MaxOrderID'] + 1;
+
                 // Create new order
-                $stmtOrder = $con->prepare("INSERT INTO `Order` (OrderDate, Status, ShippingID, BuyerID) VALUES (?, 'pending', ?, ?)");
-                $stmtOrder->bind_param("sii", $today, $shippingId, $userId);
+                $stmtOrder = $con->prepare("INSERT INTO `Order` (OrderID, OrderDate, Status, ShippingID, BuyerID) VALUES (?, ?, 'pending', ?, ?)");
+                $stmtOrder->bind_param("isii", $orderId, $today, $shippingId, $userId);
                 if(!$stmtOrder->execute()){
-                    $str = "Failed to create order. Please try again.";
+                    $str = "Failed to create order: " . $stmtOrder->error;
                     goto end;
                 }
-                $orderId = $con->insert_id;
             }
 
             // If the product is already in the pending cart, increase its quantity instead of inserting a duplicate.
@@ -94,7 +98,7 @@
                 if($stmtItem->execute()){
                     $success = "Cart updated! You now have " . $newQty . "x " . htmlspecialchars($productName) . ".";
                 } else {
-                    $str = "Failed to update cart item. Please try again.";
+                    $str = "Failed to update cart item: " . $stmtItem->error;
                 }
             } else {
                 $stmtItem = $con->prepare("INSERT INTO OrderItem (OrderID, ProductName, Quantity, PriceAtPurchase) VALUES (?, ?, ?, ?)");
@@ -102,7 +106,7 @@
                 if($stmtItem->execute()){
                     $success = "Added to cart! (" . $qty . "x " . htmlspecialchars($productName) . " @ $" . number_format($priceAtPurchase, 2) . " each)";
                 } else {
-                    $str = "Failed to add item. Please try again.";
+                    $str = "Failed to add item: " . $stmtItem->error;
                 }
             }
         }
