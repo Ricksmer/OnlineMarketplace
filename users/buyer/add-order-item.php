@@ -8,7 +8,7 @@
     }
 
     if($_SESSION['role'] !== 'buyer'){
-        header("Location: ../buyer-interface.php");
+        header("Location: ../seller/seller-interface.php");
         exit();
     }
 

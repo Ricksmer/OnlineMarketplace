@@ -5,6 +5,10 @@ if (!isset($_SESSION['userId'])) {
     header("Location: ../../login.php");
     exit();
 }
+    if($_SESSION['role'] !== 'buyer'){
+        header("Location: ../seller/seller-interface.php");
+        exit();
+    }
 
 $con = mysqli_connect("127.0.0.1", "root", "", "online_marketplace") or die("Connection Error.");
 
