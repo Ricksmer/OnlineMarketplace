@@ -232,7 +232,7 @@
     </a>
     <div class="nav-right">
         <a href="/OnlineMarketplace/users/buyer/market.php" class="nav-back">← Back to Market</a>
-        <a href="/OnlineMarketplace/logout.php" class="nav-btn">Logout</a>
+        <a href="/OnlineMarketplace/login.php" class="nav-btn">Logout</a>
     </div>
 </nav>
 
