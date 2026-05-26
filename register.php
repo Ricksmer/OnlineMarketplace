@@ -1,5 +1,21 @@
 <?php
     session_start();
+
+    if (!isset($_SESSION['userId'])) {
+        header("Location: /OnlineMarketplace/login.php");
+        exit();
+    }
+
+    if($_SESSION['role'] !== 'seller'){
+        header("Location: users/buyer/buyer-interface.php");
+        exit();
+    }
+
+    if($_SESSION['role'] !== 'buyer'){
+        header("Location: users/seller/seller-interface.php");
+        exit();
+    }
+
     $con = mysqli_connect("127.0.0.1","root","","online_marketplace") or die("Error in connection.");
     $str = "";
 

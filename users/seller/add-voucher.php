@@ -1,5 +1,5 @@
 <?php
-    session_start();
+ session_start();
     if (!isset($_SESSION['userId'])) {
         header("Location: /OnlineMarketplace/login.php");
         exit();
@@ -8,47 +8,49 @@
     if($_SESSION['role'] !== 'seller'){
     header("Location: ../buyer/buyer-interface.php");
     exit();
-}
+    }
+$con = mysqli_connect("127.0.0.1","root","","online_marketplace") or die("Connection Error");
+ 
+$message = "";
+$userId = $_SESSION['userId'];
+ 
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    $voucherID = $_POST['voucherID'];
+    $code = $_POST['code'];
+    $discountAmount = $_POST['discountAmount'];
+    $expDay = (int)$_POST['expDay'];
+    $expMonth = (int)$_POST['expMonth'];
+    $expYear = (int)$_POST['expYear'];
+    $usageLimit = $_POST['usageLimit'];
 
-    $con = mysqli_connect("127.0.0.1","root","","online_marketplace") or die("Connection Error");
-
-    $message = "";
-    $userId = $_SESSION['userId'];
-
-    if ($_SERVER["REQUEST_METHOD"] == "POST") {
-        $voucherID = $_POST['voucherID'];
-        $code = $_POST['code'];
-        $discountAmount = $_POST['discountAmount'];
-        $expDay = $_POST['expDay'];
-        $expMonth = $_POST['expMonth'];
-        $expYear = $_POST['expYear'];
-        $usageLimit = $_POST['usageLimit'];
-
-        if (!checkdate($expMonth, $expDay, $expYear)) {
+    // 1. Check if the date is a real calendar date (e.g., weeds out Feb 30)
+    if (!checkdate($expMonth, $expDay, $expYear)) {
         $message = "<div class='alert error'>Error: The expiration date provided is not a valid calendar date.</div>";
-        } else {
-            $inputDate = new DateTime("$expYear-$expMonth-$expDay 23:59:59");
-            $today = new DateTime("today"); // Sets time to 00:00:00 of the current day
+    } else {
+        // 2. Create DateTime objects to compare against the current time
+        $inputDate = new DateTime("$expYear-$expMonth-$expDay 23:59:59");
+        $today = new DateTime("today"); // Sets time to 00:00:00 of the current day
 
-            if ($inputDate < $today) {  
-                $message = "<div class='alert error'>Error: The expiration date cannot be in the past.</div>";
+        // 3. Check if the input date is earlier than today
+        if ($inputDate < $today) {
+            $message = "<div class='alert error'>Error: The expiration date cannot be in the past.</div>";
+        } else {
+            // Proceed with database insertion if validation passes
+            $sql = "INSERT INTO Voucher (VoucherID, Code, DiscountAmount, ExpirationDay, ExpirationMonth, ExpirationYear, UsageLimit, SellerID) 
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+         
+            $stmt = $con->prepare($sql);
+            $stmt->bind_param("isdiiiii", $voucherID, $code, $discountAmount, $expDay, $expMonth, $expYear, $usageLimit, $userId);
+         
+            if ($stmt->execute()) {
+                $message = "<div class='alert success'>Voucher '$code' added successfully!</div>";
             } else {
-                // Proceed with database insertion if validation passes
-                $sql = "INSERT INTO Voucher (VoucherID, Code, DiscountAmount, ExpirationDay, ExpirationMonth, ExpirationYear, UsageLimit) 
-                        VALUES (?, ?, ?, ?, ?, ?, ?)";
-            
-                $stmt = $con->prepare($sql);
-                $stmt->bind_param("isdiiii", $voucherID, $code, $discountAmount, $expDay, $expMonth, $expYear, $usageLimit);
-            
-                if ($stmt->execute()) {
-                    $message = "<div class='alert success'>Voucher '$code' added successfully!</div>";
-                } else {
-                    $message = "<div class='alert error'>Error: " . $stmt->error . "</div>";
-                }
-                $stmt->close();
+                $message = "<div class='alert error'>Error: " . $stmt->error . "</div>";
             }
+            $stmt->close();
         }
     }
+}
 ?>
 
 
@@ -123,6 +125,7 @@
 
 </body>
 </html>
+
 <style>
         /* ===================== RESET & BASE ===================== */
         * {

@@ -30,13 +30,17 @@
             if(mysqli_num_rows($seller_result) == 1){
                 $_SESSION['userId'] = $val['UserID'];
                 $_SESSION['uname']  = $val['username'];
+                $_SESSION['role']   = 'seller';
                 session_regenerate_id(true);
                 header("Location: /OnlineMarketplace/users/seller/seller-interface.php");
+                exit();
             } else {
                 $_SESSION['userId'] = $val['UserID'];
                 $_SESSION['uname']  = $val['username'];
+                $_SESSION['role']   = 'buyer';
                 session_regenerate_id(true);
                 header("Location: /OnlineMarketplace/users/buyer/buyer-interface.php");
+                exit();
             }
         } else {
             $str = "Invalid credentials";

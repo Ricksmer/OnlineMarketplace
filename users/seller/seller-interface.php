@@ -22,15 +22,15 @@
     ");
 
     $vouchers = mysqli_query($con, "
-        SELECT 
-            VoucherID, 
+        SELECT VoucherID, 
             Code, 
-            DiscountAmount, 
+            DiscountAmount,
             ExpirationDay, 
             ExpirationMonth, 
             ExpirationYear, 
-            UsageLimit 
+            UsageLimit
         FROM Voucher
+        WHERE SellerID = $userId
     ");
 
     $payments = mysqli_query($con, "

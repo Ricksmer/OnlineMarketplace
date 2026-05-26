@@ -7,9 +7,9 @@ if (!isset($_SESSION['userId'])) {
 }
 
 if($_SESSION['role'] !== 'buyer'){
-        header("Location: ../seller/seller-interface.php");
-        exit();
-    }
+    header("Location: ../seller/seller-interface.php");
+    exit();
+}
 
 $con = mysqli_connect("127.0.0.1", "root", "", "online_marketplace") or die("Error in connection.");
 
