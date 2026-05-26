@@ -1,16 +1,15 @@
 <?php
     session_start();
-
+    
     if (!isset($_SESSION['userId'])) {
         header("Location: ../../login.php");
         exit();
     }
-
     if($_SESSION['role'] !== 'seller'){
-    header("Location: ../buyer/buyer-interface.php");
-    exit();
-}
-
+        header("Location: ../buyer/buyer-interface.php");
+        exit();
+    }
+        
     $con = mysqli_connect("127.0.0.1", "root", "", "online_marketplace") or die("Error in connection.");
     $userId = $_SESSION['userId'];
 
@@ -22,13 +21,8 @@
     ");
 
     $vouchers = mysqli_query($con, "
-        SELECT VoucherID, 
-            Code, 
-            DiscountAmount,
-            ExpirationDay, 
-            ExpirationMonth, 
-            ExpirationYear, 
-            UsageLimit
+        SELECT VoucherID, Code, DiscountAmount,
+               ExpirationDay, ExpirationMonth, ExpirationYear, UsageLimit
         FROM Voucher
         WHERE SellerID = $userId
     ");
@@ -64,7 +58,6 @@
             <span class="logo-icon">OM</span>
             Online Marketplace
         </a>
-
         <ul class="nav-links">
             <li><span class="nav-badge seller-badge">Seller</span></li>
             <li><a href="../logout.php">Logout</a></li>
@@ -81,7 +74,6 @@
                 </h1>
                 <p>Manage your products, address, vouchers, and payments below.</p>
             </div>
-
             <span class="role-badge seller-badge">Seller Account</span>
         </div>
 
@@ -116,7 +108,6 @@
                 </button>
             </div>
 
-            
             <div class="action-card seller-card">
                 <div class="card-icon icon-amber">&#127987;</div>
                 <h3>Add Address</h3>
@@ -134,48 +125,63 @@
 
     <p class="section-title table-title">Your Products</p>
 
-    <button class="nav-button" onclick="location.href='seller-products.php'">
-        View Products
-    </button>
-
+    <table class="records-table">
+        <thead>
+            <tr>
+                <th>Product Name</th>
+                <th>Price</th>
+                <th>Stock</th>
+                <th>Category</th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php if(mysqli_num_rows($products) > 0): ?>
+                <?php while($row = mysqli_fetch_assoc($products)): ?>
+                    <tr>
+                        <td><strong><?php echo htmlspecialchars($row['ProductName']); ?></strong></td>
+                        <td>$<?php echo number_format($row['Price'], 2); ?></td>
+                        <td><?php echo $row['StockQuantity']; ?></td>
+                        <td><?php echo htmlspecialchars($row['CategoryName'] ?? 'Uncategorized'); ?></td>
+                    </tr>
+                <?php endwhile; ?>
+            <?php else: ?>
+                <tr>
+                    <td colspan="4" style="text-align:center; color:#888;">
+                        No products listed yet.
+                    </td>
+                </tr>
+            <?php endif; ?>
+        </tbody>
+    </table>
 
     <p class="section-title table-title">Vouchers</p>
 
     <table class="records-table">
         <thead>
             <tr>
-                <th>ID</th>
                 <th>Promo Code</th>
                 <th>Discount</th>
                 <th>Expiration</th>
                 <th>Limit</th>
             </tr>
         </thead>
-
         <tbody>
             <?php if(mysqli_num_rows($vouchers) > 0): ?>
                 <?php while($row = mysqli_fetch_assoc($vouchers)): ?>
                     <tr>
-                        <td>
-                            <?php echo $row['VoucherID']; ?>
-                        </td>
                         <td style="font-weight: bold; color: #0a4cd3;">
                             <?php echo htmlspecialchars($row['Code']); ?>
                         </td>
-                        <td>
-                            $<?php echo number_format($row['DiscountAmount'], 2); ?>
-                        </td>
+                        <td>$<?php echo number_format($row['DiscountAmount'], 2); ?></td>
                         <td>
                             <?php echo $row['ExpirationDay'] . "/" . $row['ExpirationMonth'] . "/" . $row['ExpirationYear']; ?>
                         </td>
-                        <td>
-                            <?php echo $row['UsageLimit']; ?> times
-                        </td>
+                        <td><?php echo $row['UsageLimit']; ?> times</td>
                     </tr>
                 <?php endwhile; ?>
             <?php else: ?>
                 <tr>
-                    <td colspan="5" style="text-align:center; color:#888;">
+                    <td colspan="4" style="text-align:center; color:#888;">
                         No active vouchers found.
                     </td>
                 </tr>
@@ -196,29 +202,16 @@
                 <th>Voucher</th>
             </tr>
         </thead>
-
         <tbody>
             <?php if(mysqli_num_rows($payments) > 0): ?>
                 <?php while($row = mysqli_fetch_assoc($payments)): ?>
                     <tr>
-                        <td>
-                            <?php echo $row['PaymentID']; ?>
-                        </td>
-                        <td>
-                            #<?php echo $row['OrderID']; ?>
-                        </td>
-                        <td>
-                            $<?php echo number_format($row['PaymentAmount'], 2); ?>
-                        </td>
-                        <td>
-                            <?php echo htmlspecialchars($row['PaymentMethod']); ?>
-                        </td>
-                        <td>
-                            <?php echo htmlspecialchars($row['PaymentStatus']); ?>
-                        </td>
-                        <td>
-                            <?php echo !empty($row['VoucherCode']) ? htmlspecialchars($row['VoucherCode']) : 'None'; ?>
-                        </td>
+                        <td><?php echo $row['PaymentID']; ?></td>
+                        <td>#<?php echo $row['OrderID']; ?></td>
+                        <td>$<?php echo number_format($row['PaymentAmount'], 2); ?></td>
+                        <td><?php echo htmlspecialchars($row['PaymentMethod']); ?></td>
+                        <td><?php echo htmlspecialchars($row['PaymentStatus']); ?></td>
+                        <td><?php echo !empty($row['VoucherCode']) ? htmlspecialchars($row['VoucherCode']) : 'None'; ?></td>
                     </tr>
                 <?php endwhile; ?>
             <?php else: ?>
@@ -241,29 +234,12 @@
 <style>
     .table-title {
         justify-self: center;
-        width: 45vw;
-    }
-
-    .nav-button{
-        display: flex;
-        justify-self: left;
-        justify-content:center;
-        align-self: center;
-        margin-left: 27vw;
-        margin-bottom: 2vh;
-        padding: 0.8vh;
-        padding-top: 1.2vh;
-        padding-bottom: 1.2vh;
-        width: 12vw;
-        color: white;
-        background-color: #0a4cd3;
-        border: none;
-        border-radius: 0.8vh;
+        width: 50vw;
     }
 
     .records-table { 
         justify-self: center;
-        width: 45vw; 
+        width: 50vw; 
         border-collapse: collapse; 
         margin-top: 15px; 
         margin-bottom: 30px; 

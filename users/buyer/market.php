@@ -197,7 +197,7 @@
     <div class="nav-right">
         <span class="nav-user">👋 <?php echo htmlspecialchars($uname); ?></span>
         <a href="/OnlineMarketplace/users/buyer/buyer-interface.php" class="nav-back">← Back</a>
-        <a href="/OnlineMarketplace/logout.php" class="nav-btn">Logout</a>
+        <a href="/OnlineMarketplace/users/logout.php" class="nav-btn">Logout</a>
     </div>
 </nav>
 

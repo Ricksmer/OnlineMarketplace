@@ -3,6 +3,16 @@
     $con = mysqli_connect("127.0.0.1","root","","online_marketplace") or die("Error in connection.");
     $str = "";
 
+    if(isset($_SESSION['userId']) && isset($_SESSION['role'])){
+        if($_SESSION['role'] === 'seller'){
+            header("Location: /OnlineMarketplace/users/seller/seller-interface.php");
+            exit();
+        } else {
+            header("Location: /OnlineMarketplace/users/buyer/buyer-interface.php");
+            exit();
+        }
+    }
+
     // Show success message if coming from register
     $registered = isset($_GET['registered']) ? "Account created! Please log in." : "";
 

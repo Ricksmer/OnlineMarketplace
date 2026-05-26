@@ -1,58 +1,39 @@
 <?php
- session_start();
-    if (!isset($_SESSION['userId'])) {
-        header("Location: /OnlineMarketplace/login.php");
-        exit();
-    }
+session_start();
 
-    if($_SESSION['role'] !== 'seller'){
-    header("Location: ../buyer/buyer-interface.php");
+if (!isset($_SESSION['userId'])) {
+    header("Location: ../../login.php");
     exit();
-    }
+}
+
 $con = mysqli_connect("127.0.0.1","root","","online_marketplace") or die("Connection Error");
- 
+
 $message = "";
 $userId = $_SESSION['userId'];
- 
+
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $voucherID = $_POST['voucherID'];
     $code = $_POST['code'];
     $discountAmount = $_POST['discountAmount'];
-    $expDay = (int)$_POST['expDay'];
-    $expMonth = (int)$_POST['expMonth'];
-    $expYear = (int)$_POST['expYear'];
+    $expDay = $_POST['expDay'];
+    $expMonth = $_POST['expMonth'];
+    $expYear = $_POST['expYear'];
     $usageLimit = $_POST['usageLimit'];
 
-    // 1. Check if the date is a real calendar date (e.g., weeds out Feb 30)
-    if (!checkdate($expMonth, $expDay, $expYear)) {
-        $message = "<div class='alert error'>Error: The expiration date provided is not a valid calendar date.</div>";
-    } else {
-        // 2. Create DateTime objects to compare against the current time
-        $inputDate = new DateTime("$expYear-$expMonth-$expDay 23:59:59");
-        $today = new DateTime("today"); // Sets time to 00:00:00 of the current day
+    $sql = "INSERT INTO Voucher (Code, DiscountAmount, ExpirationDay, ExpirationMonth, ExpirationYear, UsageLimit, SellerID) 
+            VALUES (?, ?, ?, ?, ?, ?, ?)";
 
-        // 3. Check if the input date is earlier than today
-        if ($inputDate < $today) {
-            $message = "<div class='alert error'>Error: The expiration date cannot be in the past.</div>";
-        } else {
-            // Proceed with database insertion if validation passes
-            $sql = "INSERT INTO Voucher (VoucherID, Code, DiscountAmount, ExpirationDay, ExpirationMonth, ExpirationYear, UsageLimit, SellerID) 
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
-         
-            $stmt = $con->prepare($sql);
-            $stmt->bind_param("isdiiiii", $voucherID, $code, $discountAmount, $expDay, $expMonth, $expYear, $usageLimit, $userId);
-         
-            if ($stmt->execute()) {
-                $message = "<div class='alert success'>Voucher '$code' added successfully!</div>";
-            } else {
-                $message = "<div class='alert error'>Error: " . $stmt->error . "</div>";
-            }
-            $stmt->close();
-        }
+    $stmt = $con->prepare($sql);
+    $stmt->bind_param("sdiiiii", $code, $discountAmount, $expDay, $expMonth, $expYear, $usageLimit, $userId);
+
+    if ($stmt->execute()) {
+        $message = "<div class='alert success'>Voucher '$code' added successfully!</div>";
+    } else {
+        $message = "<div class='alert error'>Error: " . $stmt->error . "</div>";
     }
+    $stmt->close();
+    
 }
 ?>
-
 
 <!DOCTYPE html>
 <html lang="en">
@@ -84,18 +65,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
             <form action="add-voucher.php" method="POST">
                 <div class="form-group">
-                    <label class="form-label">Voucher ID</label>
-                    <input type="number" name="voucherID" placeholder="e.g. 501" required>
-                </div>
-
-                <div class="form-group">
                     <label class="form-label">Promo Code</label>
                     <input type="text" name="code" maxlength="15" placeholder="SUMMER2026" required>
                 </div>
 
                 <div class="form-group">
                     <label class="form-label">Discount Amount ($)</label>
-                    <input type="number" step="0.01" name="discountAmount" placeholder="0.00" required>
+                    <input type="number" step="0.01" name="discountAmount" min="0" placeholder="0.00" required>
                 </div>
 
                 <div class="form-group">
@@ -109,14 +85,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
                 <div class="form-group">
                     <label class="form-label">Usage Limit</label>
-                    <input type="number" name="usageLimit" placeholder="Number of times usable" required>
+                    <input type="number" name="usageLimit" min="0" placeholder="Number of times usable" required>
                 </div>
 
                 <button type="submit" class="card-btn">Register Voucher</button>
             </form>
             <a href="seller-interface.php" class="back-link">← Go Back</a>
         </div>
-
 
         <footer class="page-footer">
             &copy; 2026 OnlineMarketplace Systems. All rights reserved.
@@ -125,9 +100,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 </body>
 </html>
-
 <style>
-        /* ===================== RESET & BASE ===================== */
         * {
             box-sizing: border-box;
             margin: 0;
@@ -141,7 +114,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             color: #1a1a2e;
         }
 
-        /* ===================== NAVBAR ===================== */
         .navbar {
             background: #0a4cd3;
             padding: 12px 30px;
@@ -186,14 +158,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             font-size: 13px;
         }
 
-        /* ===================== PAGE LAYOUT ===================== */
         .page-wrapper {
             max-width: 600px;
             margin: 40px auto;
             padding: 0 20px;
         }
 
-        /* ===================== FORM CARD ===================== */
         .action-card {
             background: white;
             border-radius: 16px;
@@ -223,7 +193,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             border-radius: 20px;
         }
 
-        /* ===================== FORM ELEMENTS ===================== */
         .form-group {
             margin-bottom: 18px;
         }
@@ -276,7 +245,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             opacity: 0.88;
         }
 
-        /* ===================== ALERTS ===================== */
         .alert {
             padding: 12px;
             border-radius: 8px;
@@ -302,5 +270,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             color: #1e6df6;
             text-decoration: none;
         }
-        .back-link:hover { text-decoration: underline; }    
-    </style>
+        .back-link:hover { text-decoration: underline; }
+</style>
+</body>
+</html>
