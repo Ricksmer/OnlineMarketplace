@@ -7,6 +7,11 @@
         exit();
     }
 
+    if($_SESSION['role'] !== 'buyer'){
+        header("Location: ../buyer-interface.php");
+        exit();
+    }
+
     $userId = $_SESSION['userId'];
     $uname  = $_SESSION['uname'];
     $str     = "";

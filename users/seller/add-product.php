@@ -111,7 +111,7 @@
             </select>
  
             <label class="ap-label">DESCRIPTION</label>
-            <input class="ap-input" type="text" name="txtDescription" placeholder="Short product description" required>
+            <input class="ap-input" type="text" name="txtDescription" placeholder="Short product description">
  
             <button type="submit" name="btnSave" class="ap-btn">
                 Save Product

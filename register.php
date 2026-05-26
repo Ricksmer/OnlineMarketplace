@@ -19,7 +19,7 @@
             $check->bind_param("s", $uname);
             $check->execute();
             
-            if($check->get_result()->num_rows > 0){
+            if($check->get_result()->num_rows != 0){
                 $str = "Username already taken.";
             } else {
                 // Get the next UserID manually
@@ -87,17 +87,17 @@
 <form method="post">
     <div class="input-group">
         <span class="icon"></span>
-        <input type="text" placeholder="Username" required name="txtUsername">
+        <input type="text" placeholder="Username" name="txtUsername">
     </div>
 
     <div class="input-group">
         <span class="icon"></span>
-        <input type="password" placeholder="Password" required name="txtPassword">
+        <input type="password" placeholder="Password" name="txtPassword">
     </div>
 
     <div class="input-group">
         <span class="icon"></span>
-        <input type="password" placeholder="Confirm Password" required name="txtConfirmPassword">
+        <input type="password" placeholder="Confirm Password" name="txtConfirmPassword">
     </div>
 
     <div class="input-group">

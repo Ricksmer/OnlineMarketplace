@@ -1,33 +1,51 @@
 <?php
-
-$con = mysqli_connect("127.0.0.1","root","","online_marketplace") or die("Connection Error");
-
-$message = "";
-
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $voucherID = $_POST['voucherID'];
-    $code = $_POST['code'];
-    $discountAmount = $_POST['discountAmount'];
-    $expDay = $_POST['expDay'];
-    $expMonth = $_POST['expMonth'];
-    $expYear = $_POST['expYear'];
-    $usageLimit = $_POST['usageLimit'];
-
-    // SQL statement based on schema: VoucherID, Code, DiscountAmount, ExpirationDay, ExpirationMonth, ExpirationYear, UsageLimit
-    $sql = "INSERT INTO Voucher (VoucherID, Code, DiscountAmount, ExpirationDay, ExpirationMonth, ExpirationYear, UsageLimit) 
-            VALUES (?, ?, ?, ?, ?, ?, ?)";
-
-    $stmt = $con->prepare($sql);
-    $stmt->bind_param("isdiiii", $voucherID, $code, $discountAmount, $expDay, $expMonth, $expYear, $usageLimit);
-
-    if ($stmt->execute()) {
-        $message = "<div class='alert success'>Voucher '$code' added successfully!</div>";
-    } else {
-        $message = "<div class='alert error'>Error: " . $stmt->error . "</div>";
+    session_start();
+    if (!isset($_SESSION['userId'])) {
+        header("Location: /OnlineMarketplace/login.php");
+        exit();
     }
-    $stmt->close();
-}
+
+    $con = mysqli_connect("127.0.0.1","root","","online_marketplace") or die("Connection Error");
+
+    $message = "";
+    $userId = $_SESSION['userId'];
+
+    if ($_SERVER["REQUEST_METHOD"] == "POST") {
+        $voucherID = $_POST['voucherID'];
+        $code = $_POST['code'];
+        $discountAmount = $_POST['discountAmount'];
+        $expDay = $_POST['expDay'];
+        $expMonth = $_POST['expMonth'];
+        $expYear = $_POST['expYear'];
+        $usageLimit = $_POST['usageLimit'];
+
+        if (!checkdate($expMonth, $expDay, $expYear)) {
+        $message = "<div class='alert error'>Error: The expiration date provided is not a valid calendar date.</div>";
+        } else {
+            $inputDate = new DateTime("$expYear-$expMonth-$expDay 23:59:59");
+            $today = new DateTime("today"); // Sets time to 00:00:00 of the current day
+
+            if ($inputDate < $today) {  
+                $message = "<div class='alert error'>Error: The expiration date cannot be in the past.</div>";
+            } else {
+                // Proceed with database insertion if validation passes
+                $sql = "INSERT INTO Voucher (VoucherID, Code, DiscountAmount, ExpirationDay, ExpirationMonth, ExpirationYear, UsageLimit) 
+                        VALUES (?, ?, ?, ?, ?, ?, ?)";
+            
+                $stmt = $con->prepare($sql);
+                $stmt->bind_param("isdiiii", $voucherID, $code, $discountAmount, $expDay, $expMonth, $expYear, $usageLimit);
+            
+                if ($stmt->execute()) {
+                    $message = "<div class='alert success'>Voucher '$code' added successfully!</div>";
+                } else {
+                    $message = "<div class='alert error'>Error: " . $stmt->error . "</div>";
+                }
+                $stmt->close();
+            }
+        }
+    }
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">
