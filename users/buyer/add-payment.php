@@ -77,11 +77,6 @@ if (!$voucherResult) {
         <form action="save-payment.php" method="POST">
 
             <div class="form-group">
-                <label class="form-label">Payment ID</label>
-                <input type="number" name="paymentID" placeholder="e.g. 1001" required>
-            </div>
-
-            <div class="form-group">
                 <label class="form-label">Order</label>
                 <select name="orderID" required>
                     <option value="">Select Order</option>
@@ -117,7 +112,7 @@ if (!$voucherResult) {
 
             <div class="form-group">
                 <label class="form-label">Payment Amount</label>
-                <input type="number" step="0.01" min="0.01" name="paymentAmount" placeholder="0.00" required>
+                <input type="number" step="0.01" min="0" name="paymentAmount" placeholder="0.00" required>
             </div>
 
             <div class="form-group">
@@ -128,16 +123,6 @@ if (!$voucherResult) {
                     <option value="GCash">GCash</option>
                     <option value="Bank Transfer">Bank Transfer</option>
                     <option value="Credit Card">Credit Card</option>
-                </select>
-            </div>
-
-            <div class="form-group">
-                <label class="form-label">Payment Status</label>
-                <select name="paymentStatus" required>
-                    <option value="">Select Status</option>
-                    <option value="Pending">Pending</option>
-                    <option value="Paid">Paid</option>
-                    <option value="Failed">Failed</option>
                 </select>
             </div>
 

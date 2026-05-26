@@ -16,19 +16,25 @@ $userId = $_SESSION['userId'];
 
 if (isset($_POST['btnSavePayment'])) {
 
-    $paymentID = (int) $_POST['paymentID'];
     $orderID = (int) $_POST['orderID'];
     $voucherID = $_POST['voucherID'] !== "" ? (int) $_POST['voucherID'] : null;
     $paymentAmount = (float) $_POST['paymentAmount'];
     $paymentMethod = trim($_POST['paymentMethod']);
-    $paymentStatus = trim($_POST['paymentStatus']);
+
+    if ($paymentAmount < 0) {
+        echo "<script>
+            alert('Payment amount cannot be negative.');
+            window.location='add-payment.php';
+        </script>";
+        exit();
+    }
 
     /*
         Security check:
         Make sure the selected order belongs to the logged-in buyer.
     */
     $checkOrder = $con->prepare("
-        SELECT OrderID 
+        SELECT OrderID, TotalAmount
         FROM `order` 
         WHERE OrderID = ? AND BuyerID = ?
     ");
@@ -43,6 +49,29 @@ if (isset($_POST['btnSavePayment'])) {
         </script>";
         exit();
     }
+
+    $order = $orderResult->fetch_assoc();
+    $orderTotal = (float) $order['TotalAmount'];
+    $discountAmount = 0;
+
+    if ($voucherID !== null) {
+        $voucherStmt = $con->prepare("SELECT DiscountAmount FROM voucher WHERE VoucherID = ?");
+        $voucherStmt->bind_param("i", $voucherID);
+        $voucherStmt->execute();
+        $voucherRow = $voucherStmt->get_result()->fetch_assoc();
+
+        if ($voucherRow) {
+            $discountAmount = (float) $voucherRow['DiscountAmount'];
+        }
+    }
+
+    $amountWithDiscount = $paymentAmount + $discountAmount;
+    $paymentStatus = ($amountWithDiscount >= $orderTotal) ? "Paid" : "Pending";
+
+    $maxPayment = $con->prepare("SELECT MAX(PaymentID) AS MaxPaymentID FROM payment");
+    $maxPayment->execute();
+    $maxPaymentRow = $maxPayment->get_result()->fetch_assoc();
+    $paymentID = $maxPaymentRow['MaxPaymentID'] + 1;
 
     if ($voucherID === null) {
         $sql = "
