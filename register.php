@@ -9,10 +9,10 @@
         $cpwd  = trim($_POST['txtConfirmPassword']);
         $role  = trim($_POST['txtRole']);
 
-        if($pwd !== $cpwd){
-            $str = "Passwords do not match.";
-        } elseif(empty($uname) || empty($pwd) || empty($role)){
+        if(empty($uname) || empty($pwd) || empty($role) || empty($cpwd)){
             $str = "All fields are required.";
+        } elseif($pwd !== $cpwd){
+            $str = "Passwords do not match.";
         } else {
             // Check if username already exists
             $check = $con->prepare("SELECT * FROM `user` WHERE username=?");

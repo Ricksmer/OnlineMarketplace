@@ -276,5 +276,5 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             color: #1e6df6;
             text-decoration: none;
         }
-        .back-link:hover { text-decoration: underline; }
+        .back-link:hover { text-decoration: underline; }    
     </style>

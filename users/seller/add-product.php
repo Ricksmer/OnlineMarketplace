@@ -15,7 +15,7 @@
     $productName = mysqli_real_escape_string($con, $_POST['txtEventName']);
     $price       = (float)$_POST['txtPrice'];
     $stock       = (int)$_POST['txtStock'];
-    $category    = mysqli_real_escape_string($con, $_POST['txtRoomID']);
+    $category    = mysqli_real_escape_string($con, $_POST['txtCategoryID']);
     $description = mysqli_real_escape_string($con, $_POST['txtDescription']);
 
     // Check if product already exists
@@ -25,7 +25,7 @@
     $stmt->execute();
     $result=$stmt->get_result();
     
-    if($result->num_rows >= 1){
+    if($result->num_rows == 1){
         $row = $result->fetch_assoc();
         $newStock = $row['StockQuantity'] + $stock; 
 
@@ -39,7 +39,6 @@
             $msg = $con->error;
         }
     } else {
-        // Insert new product
         $sql  = "INSERT INTO product (ProductName, Price, StockQuantity , Description, SellerID, CategoryID) VALUES (?, ?, ?, ?, ?, ?)";
         $stmt = $con->prepare($sql);
         $stmt->bind_param("sdisii", $productName, $price, $stock, $description, $userId, $category);
@@ -102,7 +101,7 @@
             <input class="ap-input" type="number" name="txtStock" placeholder="e.g. 100" min="1" required>
  
             <label class="ap-label">CATEGORY</label>
-            <select class="ap-input" name="txtRoomID" required>
+            <select class="ap-input" name="txtCategoryID" required>
                 <option value="" disabled selected>Select a category</option>
                 <?php while($category = mysqli_fetch_array($categories)): ?>
                     <option value="<?php echo $category['CategoryID']; ?>">

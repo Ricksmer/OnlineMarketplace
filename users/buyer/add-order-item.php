@@ -75,13 +75,35 @@
                 $orderId = $con->insert_id;
             }
 
-            // Insert order item
-            $stmtItem = $con->prepare("INSERT INTO OrderItem (OrderID, ProductName, Quantity, PriceAtPurchase) VALUES (?, ?, ?, ?)");
-            $stmtItem->bind_param("isid", $orderId, $productName, $qty, $priceAtPurchase);
-            if($stmtItem->execute()){
-                $success = "Added to cart! (" . $qty . "x " . htmlspecialchars($productName) . " @ $" . number_format($priceAtPurchase, 2) . " each)";
+            // If the product is already in the pending cart, increase its quantity instead of inserting a duplicate.
+            $stmtExistingItem = $con->prepare("SELECT Quantity FROM OrderItem WHERE OrderID=? AND ProductName=?");
+            $stmtExistingItem->bind_param("is", $orderId, $productName);
+            $stmtExistingItem->execute();
+            $existingItem = $stmtExistingItem->get_result()->fetch_assoc();
+
+            if($existingItem){
+                $newQty = $existingItem['Quantity'] + $qty;
+
+                if($newQty > $product['StockQuantity']){
+                    $str = "Not enough stock. You already have " . $existingItem['Quantity'] . " in your cart and only " . $product['StockQuantity'] . " are available.";
+                    goto end;
+                }
+
+                $stmtItem = $con->prepare("UPDATE OrderItem SET Quantity=?, PriceAtPurchase=? WHERE OrderID=? AND ProductName=?");
+                $stmtItem->bind_param("idis", $newQty, $priceAtPurchase, $orderId, $productName);
+                if($stmtItem->execute()){
+                    $success = "Cart updated! You now have " . $newQty . "x " . htmlspecialchars($productName) . ".";
+                } else {
+                    $str = "Failed to update cart item. Please try again.";
+                }
             } else {
-                $str = "Failed to add item. Please try again.";
+                $stmtItem = $con->prepare("INSERT INTO OrderItem (OrderID, ProductName, Quantity, PriceAtPurchase) VALUES (?, ?, ?, ?)");
+                $stmtItem->bind_param("isid", $orderId, $productName, $qty, $priceAtPurchase);
+                if($stmtItem->execute()){
+                    $success = "Added to cart! (" . $qty . "x " . htmlspecialchars($productName) . " @ $" . number_format($priceAtPurchase, 2) . " each)";
+                } else {
+                    $str = "Failed to add item. Please try again.";
+                }
             }
         }
         end:

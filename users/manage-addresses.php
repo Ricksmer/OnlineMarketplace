@@ -46,7 +46,7 @@
     $allAddresses = loadAddresses($con, $userId);
 
     // Set preferred address
-    if(isset($_POST['btnSetPreferred'])){
+    if(isset($_POST['btnSetPreferred']) && $isBuyer){
         $prefCity    = trim($_POST['prefCity']);
         $prefCountry = trim($_POST['prefCountry']);
         $prefZip     = trim($_POST['prefZip']);
