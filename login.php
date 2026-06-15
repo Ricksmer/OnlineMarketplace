@@ -91,9 +91,11 @@
     </div>
 
     <button type="submit" class="login-btn" name="btnLogin">Log in</button>
-
-    <p style="font-size: 16px; justify-self: center;"class="register-link">Don't have an account? <a href="register.php">Register here</a>.</p>
 </form>
+
+<p class="register-link">
+    Don't have an account? <a href="/OnlineMarketplace/register.php">Register here</a>.
+</p>
 </div>
 </body>
 </html>
